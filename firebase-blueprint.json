@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+            "dailyReminder": { "type": "boolean" },
+            "focusDuration": { "type": "integer" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "CheckIn": {
+      "title": "Daily Check-in",
+      "description": "User's daily mood and wellness metrics",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "mood": { "type": "string", "enum": ["great", "good", "okay", "stressed", "sad"] },
+        "moodValue": { "type": "integer" },
+        "stressLevel": { "type": "integer" },
+        "sleepHours": { "type": "number" },
+        "waterIntake": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "mood"]
+    },
+    "JournalEntry": {
+      "title": "Journal Entry",
+      "description": "Daily journaling with AI insights",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "content": { "type": "string" },
+        "moodAnalysis": { "type": "string" },
+        "sentiment": { "type": "string" },
+        "suggestions": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "content"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "User habit tracking",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "frequency": { "type": "string" },
+        "completedDates": { "type": "array", "items": { "type": "string" } },
+        "streak": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Productivity task",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "dueDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title"]
+    },
+    "FocusSession": {
+      "title": "Focus Session",
+      "description": "Pomodoro focus session record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "duration": { "type": "integer" },
+        "type": { "type": "string", "enum": ["pomodoro", "short_break", "long_break"] },
+        "completed": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "duration"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/checkins/{checkinId}": {
+      "schema": "CheckIn",
+      "description": "Daily wellness check-ins"
+    },
+    "/journal_entries/{entryId}": {
+      "schema": "JournalEntry",
+      "description": "Journal entries with AI analysis"
+    },
+    "/habits/{habitId}": {
+      "schema": "Habit",
+      "description": "Habit tracking"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "User tasks"
+    },
+    "/focus_sessions/{sessionId}": {
+      "schema": "FocusSession",
+      "description": "Focus timer logs"
+    }
+  }
+}

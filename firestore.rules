@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. MASTER DENY
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // HELPER FUNCTIONS
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 2. VALIDATION BLUEPRINTS
+    
+    function isValidUser(data) {
+      return data.uid == request.auth.uid 
+        && data.email is string 
+        && data.email.size() <= 256;
+    }
+
+    function isValidCheckIn(data) {
+      return data.userId == request.auth.uid 
+        && data.mood is string 
+        && data.mood.size() <= 50;
+    }
+
+    function isValidJournalEntry(data) {
+      return data.userId == request.auth.uid 
+        && data.content is string 
+        && data.content.size() <= 10000;
+    }
+
+    function isValidHabit(data) {
+      return data.userId == request.auth.uid 
+        && data.name is string 
+        && data.name.size() <= 100;
+    }
+
+    function isValidTask(data) {
+      return data.userId == request.auth.uid 
+        && data.title is string 
+        && data.title.size() <= 200;
+    }
+
+    function isValidFocusSession(data) {
+      return data.userId == request.auth.uid 
+        && data.duration is number;
+    }
+
+    // COLLECTIONS
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'settings']);
+    }
+
+    match /checkins/{checkinId} {
+      allow list, get: if isOwner(resource.data.userId);
+      allow create: if isValidCheckIn(incoming()) && isOwner(incoming().userId);
+      allow update: if isOwner(existing().userId) && isValidCheckIn(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['mood', 'moodValue', 'stressLevel', 'sleepHours', 'waterIntake']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /journal_entries/{entryId} {
+      allow list, get: if isOwner(resource.data.userId);
+      allow create: if isValidJournalEntry(incoming()) && isOwner(incoming().userId);
+      allow update: if isOwner(existing().userId) && isValidJournalEntry(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'moodAnalysis', 'sentiment', 'mood', 'tips']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /habits/{habitId} {
+      allow list, get: if isOwner(resource.data.userId);
+      allow create: if isValidHabit(incoming()) && isOwner(incoming().userId);
+      allow update: if isOwner(existing().userId) && isValidHabit(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'streak', 'completedDates', 'frequency']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /tasks/{taskId} {
+      allow list, get: if isOwner(resource.data.userId);
+      allow create: if isValidTask(incoming()) && isOwner(incoming().userId);
+      allow update: if isOwner(existing().userId) && isValidTask(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'completed', 'priority', 'dueDate']);
+      allow delete: if isOwner(existing().userId);
+    }
+
+    match /focus_sessions/{sessionId} {
+      allow list, get: if isOwner(resource.data.userId);
+      allow create: if isValidFocusSession(incoming()) && isOwner(incoming().userId);
+      allow delete: if isOwner(existing().userId);
+    }
+  }
+}

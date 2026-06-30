@@ -1,0 +1,10 @@
+{
+  "name": "Zenith",
+  "description": "A mental wellness and productivity companion that uses AI to help you manage stress, track habits, and stay focused. Features include AI mood analysis, smart journaling, Pomodoro focus timers, and habit tracking.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
